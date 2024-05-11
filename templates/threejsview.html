@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Visualization</title>
+    <script src="https://cdn.plotly.com/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <h1>Visualization Results</h1>
+    <div id="plotly-container" style="width: 48%; height: 600px; float: left;">{{ plot|safe }}</div>
+    <div id="stl-container" style="width: 48%; height: 600px; float: right;"></div>
+    <script type="text/javascript">
+
+    // Initialize Three.js visualization as before
+    
+
+    var material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+    // STL data loading and mesh creation code should go here
+    document.getElementById('stl-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    loadSTL();
+});
+    var formData = new FormData(this);
+    function renderSTL(data) {
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array(data.vertices);
+    const normals = new Float32Array(data.normals);
+
+    // Add vertices and normals to the geometry
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth / 2, 600);  // Set to half the window width and 600px height
+    document.getElementById('stl-container').appendChild(renderer.domElement);
+    camera.position.z = 5;
+
+    // Ensure the camera and renderer are correctly set up to view the new mesh
+    camera.lookAt(mesh.position);
+    renderer.render(scene, camera);
+}
+
+// Ensure this code runs after the STL file has been uploaded and the server returns the JSON data
+    function loadSTL() {
+        console.log("AJAX call triggered");
+        var formData = new FormData(document.getElementById('stl-form'));
+        fetch('/upload-stl', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            renderSTL(data);
+        })
+        .catch(error => console.error('Error:', error));
+        
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+    animate();
+    
+</script>
+</body>
+</html>
