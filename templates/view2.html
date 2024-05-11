@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Visualization</title>
+    <script src="https://cdn.plotly.com/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <h1>Visualization Results</h1>
+    <div id="plotly-container" style="width: 48%; height: 600px; float: left;">{{ plot|safe }}</div>
+    <div id="stl-container" style="width: 48%; height: 600px; float: right;"></div>
+    <script type="text/javascript">
+
+    // Initialize Three.js visualization as before
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth / 2, 600);  // Set to half the window width and 600px height
+    document.getElementById('stl-container').appendChild(renderer.domElement);
+    camera.position.z = 5;
+
+    var material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+    // STL data loading and mesh creation code should go here
+    document.getElementById('stl-form').onsubmit = function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    fetch('/upload-stl', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // handle the STL file visualization here
+        console.log(data);
+    })
+    .catch(error => console.error('Error:', error));
+};
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+    animate();
+    
+</script>
+</body>
+</html>
+
+
